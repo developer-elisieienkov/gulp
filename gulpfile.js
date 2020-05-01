@@ -4,9 +4,10 @@ var gulp = require('gulp'),
     autopref = require('gulp-autoprefixer'),
     postcss = require('gulp-postcss'),
     cssmin = require('gulp-cssmin'),
-    rename = require('gulp-rename');
-function scssToCss(done) {
-       return  gulp.src('./app/scss/style.scss')
+    rename = require('gulp-rename'),
+    babel = require('gulp-babel');
+function scssToCss() {
+       return  gulp.src('./src/scss/style.scss')
             .pipe(sass({
                 errorLogToConsole: true
             }))
@@ -17,29 +18,33 @@ function scssToCss(done) {
             .pipe(cssmin())
             .pipe(rename({suffix: '.min'}))
             .on('error',console.error.bind(console))
-            .pipe( gulp.dest('./app/css/'))
-            .pipe(browse.stream());
-    done();
+            .pipe( gulp.dest('./dist/'))
+            .pipe(browse.stream())
+
 }
 
+function babelator() {
+    gulp.src('src/js/script.js')
+        .pipe(babel({
+            presets: ['@babel/env']
+        }))
+        .pipe(gulp.dest('dist'))
+        .pipe(browse.stream())
+}
 
-
-function browserSync(done){
+function browserSync(){
     browse.init({
         server:{
-            baseDir:"./app"
+            baseDir:"./dist"
         }
     });
-    done();
 }
-function browserReboot(done){
+function browserReboot(){
     browse.reload({streem:true});
-    done();
-
 }
-function watchAll(){
-    gulp.watch("./app/scss/*", scssToCss);
-    gulp.watch("./app/*.html", browserReboot);
-    gulp.watch("./app/js/*", browserReboot);
+function sharingan(){
+    gulp.watch("./src/scss/*", scssToCss);
+    gulp.watch("./dist/*.html", browserReboot);
+    gulp.watch("./src/js/*", babelator);
 }
-gulp.task('default',gulp.parallel(browserSync,watchAll));
+gulp.task('default',gulp.parallel(browserSync,sharingan));
